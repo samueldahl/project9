@@ -32,7 +32,7 @@ async function getUserById(id, callback) {
   for (var i = 0; i < obj.length; i++) {
     if (obj[i].id == id) return obj[i];
   }*/
-  var user = await db.collection('users').findOne({_id: ObjectID(id)});
+  var user = await db.collection('users').findOne({id: id});
   if (callback) callback(user);
 }
 
@@ -43,7 +43,7 @@ async function getUserById(id, callback) {
 
 async function saveUser(user, callback) {
   //The below code copied from a website.
-  await db.collection('users').replaceOne({_id: ObjectID(user.id)},user);
+  await db.collection('users').replaceOne({id: user.id}, user);
   if (callback) callback();
   // So this thingy does some stuff. Its pretty dank if you ask me. It mostly consists of
   // overwriting the JSON with new updated JSON, could just be an update document thing.
@@ -74,9 +74,10 @@ app.get('/edituser/:user', function (req, res) {
   // function can proceed to take that name and use it to render the HTML it is about
   // to be given.
   var user = req.params.user;
-  var obj = getUserById(user);
-  res.render('editUser', {user: obj});
-  console.log('Edit user page request fufilled');
+  getUserById(user, function (user) {
+    res.render('editUser', {user: user});
+    console.log('Edit user page request fufilled');
+  });
 });
 app.get('/createuser', function (req, res) {
   //just renders the create user page, I just need to update the post things for this one.
