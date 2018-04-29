@@ -7,7 +7,7 @@ html
     p this is soon to be the edit user page.
     a(href = '/') Cancel and go back to user list.
     form(method='POST', action='/updatetarget')
-      input(name='id', style='display: none;', value=user.id)
+      input(name='_id', style='display: none;', value=user._id)
       span name
       input(name='name', value=user.name, required)
       br

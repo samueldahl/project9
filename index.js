@@ -32,7 +32,7 @@ async function getUserById(id, callback) {
   for (var i = 0; i < obj.length; i++) {
     if (obj[i].id == id) return obj[i];
   }*/
-  var user = await db.collection('users').findOne({id: id});
+  var user = await db.collection('users').findOne({_id: ObjectID(id)});
   if (callback) callback(user);
 }
 
@@ -43,7 +43,10 @@ async function getUserById(id, callback) {
 
 async function saveUser(user, callback) {
   //The below code copied from a website.
-  await db.collection('users').replaceOne({id: user.id}, user);
+  console.log(user);
+  var id = user._id;
+  delete user._id;
+  await db.collection('users').replaceOne({_id: ObjectID(id)}, user);
   if (callback) callback();
   // So this thingy does some stuff. Its pretty dank if you ask me. It mostly consists of
   // overwriting the JSON with new updated JSON, could just be an update document thing.
@@ -63,7 +66,6 @@ async function saveUser(user, callback) {
 
 app.get('/', async function (req, res) {
   //Do something here with the databse that allows pug to access a JSON object I think?
-
   var obj = await db.collection('users').find().toArray();
   res.render('index', {data: obj});
   console.log('Index page request fulfilled');
@@ -85,19 +87,10 @@ app.get('/createuser', function (req, res) {
   console.log('Create User page request fufilled');
 });
 
-
-
 app.post('/usertarget', async function(req, res) {
   //makes newBoi from the response, then pushes newBoi to the database.
   //var obj = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-  let newBoi = {
-    name:req.body.name,
-    id:req.body.id,
-    email:req.body.email,
-    age:req.body.age
-  }
-  console.log(newBoi);
-  await db.collection('users').insert(newBoi);
+  await db.collection('users').insert(req.body);
   // obj.push(req.body);
   // fs.writeFile('data.json', JSON.stringify(obj));
   // console.log('Create post');
@@ -130,7 +123,7 @@ app.post('/deleteuser', function(req, res) {
   //   });
   // });
   console.log(req.body.user);
-  db.collection('users').remove({id: req.body.user});
+  db.collection('users').remove({_id: ObjectID(req.body.user)});
   console.log('Doug is my homie');
   res.json({
     success: true
@@ -143,6 +136,26 @@ app.post('/updatetarget', function(req, res) {
   res.redirect('/');
 });
 
+app.get('/sorta', async function(req, res) {
+  console.log(req.body);
+  var obj = await db.collection('users').find({}).sort({name:1}).toArray();
+  res.render('index', {data: obj});
+  console.log('Alphabeticly sorted index page request fulfilled');
+})
+app.get('/sortra', async function(req, res) {
+  console.log(req.body);
+  var obj = await db.collection('users').find({}).sort({name:-1}).toArray();
+  console.log(obj);
+  res.render('index', {data: obj});
+  console.log('Reverse alphebeticly sorted index page request fulfilled');
+})
+app.get('/search/:word', async function(req, res) {
+  console.log(req.body);
+  //pass arguments to .find, specify
+  var obj = await db.collection('users').find({name:req.params.word}).toArray();
+  res.render('index', {data: obj});
+  console.log('Search page request fulfilled');
+})
 
 var port = 3000;
 
